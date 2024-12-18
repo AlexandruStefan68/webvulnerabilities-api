@@ -219,6 +219,11 @@ def apply_security_rules(file_data, request_type, ip_address=None, redis_client=
 
     return None
 
+@app.route('/')
+def home():
+    return jsonify({"message": "Welcome to the Vulnerabilities API!"})
+
+
 @app.route('/analyze', methods=['POST'])
 def analyze():
     try:
