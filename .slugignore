@@ -1,0 +1,9 @@
+*.log
+*.gz
+*.sqlite3
+.env
+__pycache__/
+*.pyc
+.git/
+.idea/
+node_modules/
