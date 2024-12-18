@@ -19,7 +19,9 @@ MONITOR_LOGS = './monitor_logs'
 RULES_FILE = './rules/security_rules.txt'
 
 app = Flask(__name__)
-CORS(app)
+
+CORS(app, resources={r"/*": {"origins": "*"}})  # Allow requests from all origins or specific ones
+
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['REPORT_FOLDER'] = REPORT_FOLDER
