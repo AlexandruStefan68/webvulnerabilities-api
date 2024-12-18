@@ -284,19 +284,41 @@ def monitor():
     return jsonify({"logs": logs})
 
 
+# @app.route('/security-rules', methods=['POST'])
+# def save_security_rules():
+#     try:
+#         rules = request.json.get("rules", "")
+#         if not rules.strip():
+#             return jsonify({"error": "No rules provided"}), 400
+
+#         with open(RULES_FILE, 'w') as rules_file:
+#             rules_file.write(rules)
+#         return jsonify({"message": "Security rules saved successfully."}), 200
+#     except Exception as e:
+#         logging.exception("Error saving security rules.")
+#         return jsonify({"error": str(e)}), 500
+
+security_rules = []  # Store security rules in memory
+
 @app.route('/security-rules', methods=['POST'])
 def save_security_rules():
     try:
-        rules = request.json.get("rules", "")
-        if not rules.strip():
+        rules = request.json.get("rules", "").strip()
+        if not rules:
             return jsonify({"error": "No rules provided"}), 400
 
-        with open(RULES_FILE, 'w') as rules_file:
-            rules_file.write(rules)
+        # Save rules in memory
+        security_rules.clear()
+        security_rules.extend(rules.splitlines())  # Split by line for multi-rule support
         return jsonify({"message": "Security rules saved successfully."}), 200
     except Exception as e:
         logging.exception("Error saving security rules.")
         return jsonify({"error": str(e)}), 500
+
+@app.route('/security-rules', methods=['GET'])
+def get_security_rules():
+    return jsonify({"rules": security_rules})  # Return security rules from memory
+
 
 
 def remove_duplicate_logs():
