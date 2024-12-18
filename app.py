@@ -306,10 +306,20 @@ def download_report(filename):
 #         logs = log_file.read()
 #     return jsonify({"logs": logs})
 
+sample_logs = [
+        "L2: MAC Address: Acest proces functioneaza doar cand este rulat local",
+        "L2: MAC Address: Src=00:11:22:33:44:55, Dst=AA:BB:CC:DD:EE:FF",
+        "L2: MAC Address: Src=00:11:22:33:44:55, Dst=AA:BB:CC:DD:EE:FF",
+        "L3: IP Packet: acest proces functioneaza doar cand este rulat local",
+        "L3: IP Packet: Src=192.168.0.1, Dst=192.168.0.2",
+        "L3: IP Packet: Src=192.168.0.1, Dst=192.168.0.2",
+        "L3: TCP SYN Packet detected: Possible SYN Flood attack."
+    ]
+
 @app.route('/monitor', methods=['GET'])
 def monitor():
     if not logs_in_memory:
-        return jsonify({"message": "No suspicious traffic detected."})
+        return jsonify({"message": sample_logs})
 
     # Return logs from memory
     return jsonify({"logs": list(logs_in_memory)})
