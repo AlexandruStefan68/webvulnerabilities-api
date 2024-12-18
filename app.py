@@ -216,7 +216,7 @@ def apply_security_rules(file_data, request_type, ip_address=None, redis_client=
 
     # Regula 3: Limitarea dimensiunii fișierului
     if 'MaxFileSize' in [rule['rule_type'] for rule in rules]:
-        max_file_size = [rule['rule_value'] for rule in rules if rule['rule_type'] == 'MaxFileSize'] * 1024 * 1024
+        max_file_size = [rule['rule_value'] for rule in rules if rule['rule_type'] == 'MaxFileSize'] * 1024
         print(max_file_size)
         print(os.path.getsize(file_path))
         if os.path.getsize(file_path) > int(max_file_size[0]):
