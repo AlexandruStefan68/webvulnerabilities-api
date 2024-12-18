@@ -14,8 +14,8 @@ import redis
 from datetime import datetime
 from collections import deque
 
-# In-memory storage for logs
-MAX_LOGS = 1000  # Set a limit to avoid excessive memory usage
+# Stocare loguri în memorie
+MAX_LOGS = 1000  # Numărul maxim de loguri stocate în memorie
 logs_in_memory = deque(maxlen=MAX_LOGS)
 
 UPLOAD_FOLDER = './uploads'
@@ -25,7 +25,7 @@ RULES_FILE = './rules/security_rules.txt'
 
 app = Flask(__name__)
 
-CORS(app, resources={r"/*": {"origins": "*"}})  # Allow requests from all origins or specific ones
+CORS(app, resources={r"/*": {"origins": "*"}})  # Permite cereri de la orice origine
 
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -36,7 +36,7 @@ os.makedirs(REPORT_FOLDER, exist_ok=True)
 os.makedirs(MONITOR_LOGS, exist_ok=True)
 os.makedirs(os.path.dirname(RULES_FILE), exist_ok=True)
 
-# Initialize Redis client
+# Conectare la serverul Redis
 redis_url = os.getenv('REDIS_URL', 'redis://default:sjWXNy2qm9RjBVD9ynNePtO5mtIjrbiB@redis-15488.c233.eu-west-1-1.ec2.redns.redis-cloud.com:15488')
 redis_client = redis.StrictRedis.from_url(redis_url)
 
@@ -117,25 +117,6 @@ def generate_pdf(report_data, output_path):
         y -= 20
     c.save()
 
-# def detect_packet(packet):
-#     log_entry = ""
-
-#     # Layer 2: Data Link
-#     if scapy.Ether in packet:
-#         log_entry = f"L2: MAC Address: Src={packet[scapy.Ether].src}, Dst={packet[scapy.Ether].dst}\n"
-
-#     # Layer 3: Network
-#     if scapy.IP in packet:
-#         log_entry = f"L3: IP Packet: Src={packet[scapy.IP].src}, Dst={packet[scapy.IP].dst}\n"
-#     if scapy.TCP in packet and packet[scapy.TCP].flags == "S":
-#         log_entry = "L3: TCP SYN Packet detected: Possible SYN Flood attack.\n"
-
-#     # Evită duplicatele
-#     if log_entry not in seen_logs:
-#         seen_logs.add(log_entry) 
-#         with open(os.path.join(MONITOR_LOGS, 'traffic.log'), 'a') as log_file:
-#             log_file.write(log_entry + "\n")
-
 def detect_packet(packet):
     log_entry = ""
 
@@ -149,15 +130,14 @@ def detect_packet(packet):
     if scapy.TCP in packet and packet[scapy.TCP].flags == "S":
         log_entry = "L3: TCP SYN Packet detected: Possible SYN Flood attack.\n"
 
-    # Avoid duplicate logs
+    # Evita loguri duplicate
     if log_entry and log_entry not in seen_logs:
         seen_logs.add(log_entry)
-        logs_in_memory.append(log_entry)  # Store log in memory
+        logs_in_memory.append(log_entry)  # Adaugă logul în memorie
 
 def monitor_traffic():
     # Monitorizează traficul de rețea și detectează pachete
     scapy.sniff(prn=detect_packet, store=False)
-
 
 
 # Funcție pentru a citi regulile de securitate dintr-un fișier
@@ -236,7 +216,7 @@ def apply_security_rules(file_data, request_type, ip_address=None, redis_client=
 
     # Regula 3: Limitarea dimensiunii fișierului
     if 'MaxFileSize' in [rule['rule_type'] for rule in rules]:
-        max_file_size = [rule['rule_value'] for rule in rules if rule['rule_type'] == 'MaxFileSize']
+        max_file_size = [rule['rule_value'] for rule in rules if rule['rule_type'] == 'MaxFileSize'] * 1024 * 1024
         print(max_file_size)
         print(os.path.getsize(file_path))
         if os.path.getsize(file_path) > int(max_file_size[0]):
@@ -296,16 +276,6 @@ def download_report(filename):
     return send_file(report_path, as_attachment=True)
 
 
-# @app.route('/monitor', methods=['GET'])
-# def monitor():
-#     log_path = os.path.join(MONITOR_LOGS, 'traffic.log')
-#     if not os.path.exists(log_path):
-#         return jsonify({"message": "No suspicious traffic detected."})
-
-#     with open(log_path, 'r') as log_file:
-#         logs = log_file.read()
-#     return jsonify({"logs": logs})
-
 sample_logs = [
         "L2: MAC Address: Acest proces functioneaza doar cand este rulat local",
         "L2: MAC Address: Src=00:11:22:33:44:55, Dst=AA:BB:CC:DD:EE:FF",
@@ -321,25 +291,9 @@ def monitor():
     if not logs_in_memory:
         return jsonify({"logs": sample_logs})
 
-    # Return logs from memory
     return jsonify({"logs": list(logs_in_memory)})
 
-
-# @app.route('/security-rules', methods=['POST'])
-# def save_security_rules():
-#     try:
-#         rules = request.json.get("rules", "")
-#         if not rules.strip():
-#             return jsonify({"error": "No rules provided"}), 400
-
-#         with open(RULES_FILE, 'w') as rules_file:
-#             rules_file.write(rules)
-#         return jsonify({"message": "Security rules saved successfully."}), 200
-#     except Exception as e:
-#         logging.exception("Error saving security rules.")
-#         return jsonify({"error": str(e)}), 500
-
-security_rules = []  # Store security rules in memory
+security_rules = []  # Regulile de securitate vor fi stocate în memorie
 
 @app.route('/security-rules', methods=['POST'])
 def save_security_rules():
@@ -348,9 +302,8 @@ def save_security_rules():
         if not rules:
             return jsonify({"error": "No rules provided"}), 400
 
-        # Save rules in memory
         security_rules.clear()
-        security_rules.extend(rules.splitlines())  # Split by line for multi-rule support
+        security_rules.extend(rules.splitlines())  # Split pe linii pentru a putea avea mai multe reguli
         return jsonify({"message": "Security rules saved successfully."}), 200
     except Exception as e:
         logging.exception("Error saving security rules.")
@@ -358,7 +311,7 @@ def save_security_rules():
 
 @app.route('/security-rules', methods=['GET'])
 def show_security_rules():
-    return jsonify({"rules": security_rules})  # Return security rules from memory
+    return jsonify({"rules": security_rules})  
 
 
 
