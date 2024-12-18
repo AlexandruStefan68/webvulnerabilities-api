@@ -319,7 +319,7 @@ sample_logs = [
 @app.route('/monitor', methods=['GET'])
 def monitor():
     if not logs_in_memory:
-        return jsonify({"message": sample_logs})
+        return jsonify({"logs": sample_logs})
 
     # Return logs from memory
     return jsonify({"logs": list(logs_in_memory)})
