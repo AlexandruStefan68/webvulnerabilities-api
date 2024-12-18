@@ -138,33 +138,19 @@ def monitor_traffic():
 
 
 # Funcție pentru a citi regulile de securitate dintr-un fișier
-# def get_security_rules():
-#     rules = []
-#     try:
-#         with open(RULES_FILE, 'r') as file:
-#             for line in file.readlines():
-#                 if line.strip():
-#                     parts = line.split(":")
-#                     rule_type = parts[0].strip()
-#                     rule_value = parts[1].strip() if len(parts) > 1 else ""
-#                     rules.append({"rule_type": rule_type, "rule_value": rule_value})
-#     except Exception as e:
-#         logging.error(f"Error loading rules: {str(e)}")
-#     return rules
-
 def get_security_rules():
     rules = []
     try:
-        # Process security rules from the in-memory list
-        for rule in security_rules:
-            if rule.strip():
-                parts = rule.split(":")
-                rule_type = parts[0].strip()
-                rule_value = parts[1].strip() if len(parts) > 1 else ""
-                rules.append({"rule_type": rule_type, "rule_value": rule_value})
+            for rule in security_rules:
+                if rule.strip():
+                    parts = rule.split(":")
+                    rule_type = parts[0].strip()
+                    rule_value = parts[1].strip() if len(parts) > 1 else ""
+                    rules.append({"rule_type": rule_type, "rule_value": rule_value})
     except Exception as e:
-        logging.error(f"Error processing in-memory rules: {str(e)}")
-    return jsonify({"rules": rules})  # Return processed rules as JSON
+        logging.error(f"Error loading rules: {str(e)}")
+    return rules
+
 
 # Funcție pentru obținerea extensiei fișierului
 def get_file_extension(file_data):
@@ -330,7 +316,7 @@ def save_security_rules():
         return jsonify({"error": str(e)}), 500
 
 @app.route('/security-rules', methods=['GET'])
-def get_security_rules():
+def show_security_rules():
     return jsonify({"rules": security_rules})  # Return security rules from memory
 
 
