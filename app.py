@@ -37,7 +37,7 @@ os.makedirs(MONITOR_LOGS, exist_ok=True)
 os.makedirs(os.path.dirname(RULES_FILE), exist_ok=True)
 
 # Initialize Redis client
-redis_url = os.getenv('REDIS_URL', 'redis://127.0.0.1:6379')
+redis_url = os.getenv('REDIS_URL', 'redis://default:sjWXNy2qm9RjBVD9ynNePtO5mtIjrbiB@redis-15488.c233.eu-west-1-1.ec2.redns.redis-cloud.com:15488')
 redis_client = redis.StrictRedis.from_url(redis_url)
 
 
@@ -310,7 +310,7 @@ sample_logs = [
         "L2: MAC Address: Acest proces functioneaza doar cand este rulat local",
         "L2: MAC Address: Src=00:11:22:33:44:55, Dst=AA:BB:CC:DD:EE:FF",
         "L2: MAC Address: Src=00:11:22:33:44:55, Dst=AA:BB:CC:DD:EE:FF",
-        "L3: IP Packet: acest proces functioneaza doar cand este rulat local",
+        "L3: IP Packet: Acest proces functioneaza doar cand este rulat local",
         "L3: IP Packet: Src=192.168.0.1, Dst=192.168.0.2",
         "L3: IP Packet: Src=192.168.0.1, Dst=192.168.0.2",
         "L3: TCP SYN Packet detected: Possible SYN Flood attack."
