@@ -12,6 +12,11 @@ import joblib
 import scapy.all as scapy  
 import redis  
 from datetime import datetime
+from collections import deque
+
+# In-memory storage for logs
+MAX_LOGS = 1000  # Set a limit to avoid excessive memory usage
+logs_in_memory = deque(maxlen=MAX_LOGS)
 
 UPLOAD_FOLDER = './uploads'
 REPORT_FOLDER = './reports'
@@ -112,6 +117,25 @@ def generate_pdf(report_data, output_path):
         y -= 20
     c.save()
 
+# def detect_packet(packet):
+#     log_entry = ""
+
+#     # Layer 2: Data Link
+#     if scapy.Ether in packet:
+#         log_entry = f"L2: MAC Address: Src={packet[scapy.Ether].src}, Dst={packet[scapy.Ether].dst}\n"
+
+#     # Layer 3: Network
+#     if scapy.IP in packet:
+#         log_entry = f"L3: IP Packet: Src={packet[scapy.IP].src}, Dst={packet[scapy.IP].dst}\n"
+#     if scapy.TCP in packet and packet[scapy.TCP].flags == "S":
+#         log_entry = "L3: TCP SYN Packet detected: Possible SYN Flood attack.\n"
+
+#     # Evită duplicatele
+#     if log_entry not in seen_logs:
+#         seen_logs.add(log_entry) 
+#         with open(os.path.join(MONITOR_LOGS, 'traffic.log'), 'a') as log_file:
+#             log_file.write(log_entry + "\n")
+
 def detect_packet(packet):
     log_entry = ""
 
@@ -125,11 +149,10 @@ def detect_packet(packet):
     if scapy.TCP in packet and packet[scapy.TCP].flags == "S":
         log_entry = "L3: TCP SYN Packet detected: Possible SYN Flood attack.\n"
 
-    # Evită duplicatele
-    if log_entry not in seen_logs:
-        seen_logs.add(log_entry) 
-        with open(os.path.join(MONITOR_LOGS, 'traffic.log'), 'a') as log_file:
-            log_file.write(log_entry + "\n")
+    # Avoid duplicate logs
+    if log_entry and log_entry not in seen_logs:
+        seen_logs.add(log_entry)
+        logs_in_memory.append(log_entry)  # Store log in memory
 
 def monitor_traffic():
     # Monitorizează traficul de rețea și detectează pachete
@@ -273,15 +296,23 @@ def download_report(filename):
     return send_file(report_path, as_attachment=True)
 
 
+# @app.route('/monitor', methods=['GET'])
+# def monitor():
+#     log_path = os.path.join(MONITOR_LOGS, 'traffic.log')
+#     if not os.path.exists(log_path):
+#         return jsonify({"message": "No suspicious traffic detected."})
+
+#     with open(log_path, 'r') as log_file:
+#         logs = log_file.read()
+#     return jsonify({"logs": logs})
+
 @app.route('/monitor', methods=['GET'])
 def monitor():
-    log_path = os.path.join(MONITOR_LOGS, 'traffic.log')
-    if not os.path.exists(log_path):
+    if not logs_in_memory:
         return jsonify({"message": "No suspicious traffic detected."})
 
-    with open(log_path, 'r') as log_file:
-        logs = log_file.read()
-    return jsonify({"logs": logs})
+    # Return logs from memory
+    return jsonify({"logs": list(logs_in_memory)})
 
 
 # @app.route('/security-rules', methods=['POST'])
