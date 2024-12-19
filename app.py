@@ -108,13 +108,16 @@ def analyze_file(file_path):
 
 def generate_pdf(report_data, output_path):
     c = canvas.Canvas(output_path, pagesize=letter)
-    c.drawString(100, 750, f"Report for: {report_data['filename']}")
-    c.drawString(100, 730, "Vulnerabilities:")
+    c.drawString(100, 750, f"Raport pentru: {report_data['filename']}")
+    c.drawString(100, 730, "Vulnerabilitati:")
+    c.drawString(100, 690, "Descriere:")
     
     y = 710
     for vuln in report_data['vulnerabilities']:
         c.drawString(120, y, f"- {vuln['type']} ({vuln['severity']}): {vuln['description']}")
         y -= 20
+    
+
     c.save()
 
 def detect_packet(packet):
@@ -260,7 +263,7 @@ def analyze():
         generate_pdf(report_data, report_path)
 
         return jsonify({
-            "report_url": f"http://localhost:5000/reports/{report_filename}",
+            "report_url": f"https://web-vulnerabilities-client-f6a362108440.herokuapp.com/reports/{report_filename}",
             "vulnerabilities": report_data['vulnerabilities']
         })
     except Exception as e:
