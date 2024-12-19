@@ -110,7 +110,6 @@ def generate_pdf(report_data, output_path):
     c = canvas.Canvas(output_path, pagesize=letter)
     c.drawString(100, 750, f"Raport pentru: {report_data['filename']}")
     c.drawString(100, 730, "Vulnerabilitati:")
-    c.drawString(100, 690, "Descriere:")
     
     y = 710
     for vuln in report_data['vulnerabilities']:
